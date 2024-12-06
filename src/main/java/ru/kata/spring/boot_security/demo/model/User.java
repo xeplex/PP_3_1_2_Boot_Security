@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 
 @Entity
@@ -14,35 +15,22 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    @ToString.Exclude
-    private int id;
+    private Long id;
 
-    @Column(name = "name")
-    private String name;
+    private String username;
 
-    @Column(name = "surname")
-    private String surname;
+    private String password;
 
-    @Column(name = "birth_year")
-    private int birthYear;
-
-    @Column(name = "height")
-    private double height;
-
-    @Column(name = "weight")
-    private double weight;
+    private String email;
 
 
-    public User(String name, String surname, int birthYear, double height, double weight) {
-        this.name = name;
-        this.surname = surname;
-        this.birthYear = birthYear;
-        this.height = height;
-        this.weight = weight;
-    }
+    @ManyToMany
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Collection<Role> roles;
 }
