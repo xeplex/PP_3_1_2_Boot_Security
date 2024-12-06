@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+</head>
+<style>
+    .red-button {
+        padding: 3px 7px;
+        background-color: #f44336;
+        color: white;
+        border: black;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        margin-right: 5px;
+    }
+
+    .yellow-button {
+        padding: 3px 7px;
+        background-color: #fffc00;
+        color: #000000;
+        border: black;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        margin-right: 5px;
+    }
+
+    .full-width-button {
+        width: 20%;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: black;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+<body>
+<h1>LIST OF USERS</h1>
+<div>
+    <br>
+    <div style="width: 100%;">
+        <input type="button" value="ADD NEW USER" onclick="window.location.href = 'addNewUser'"
+               class="full-width-button"/>
+    </div>
+    <br>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Year of birth</th>
+            <th>Height</th>
+            <th>Weight</th>
+            <th>Operations</th>
+        </tr>
+        <tr th:each="user : ${users}">
+            <td th:utext="${user.name}">...</td>
+            <td th:utext="${user.surname}">...</td>
+            <td th:utext="${user.birthYear}">...</td>
+            <td th:utext="${user.height}">...</td>
+            <td th:utext="${user.weight}">...</td>
+            <td>
+                <div style="display: inline-block; margin-right: 10px;">
+                    <form th:action="@{/deleteUser}" method="post">
+                        <input type="hidden" name="id" th:value="${user.id}"/>
+                        <button type="submit" class="red-button">DELETE</button>
+                    </form>
+                </div>
+                <div style="display: inline-block;">
+                    <form th:action="@{/editUser}" method="get">
+                        <input type="hidden" name="id" th:value="${user.id}"/>
+                        <button type="submit" class="yellow-button">UPDATE</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <br>
+</div>
+</body>
+</body>
+</html>
