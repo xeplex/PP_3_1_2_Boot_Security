@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements UserDetailsService, UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
@@ -38,9 +38,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     @Transactional
     public User getById(Long id) {
-        return userRepository.findById(id).isPresent() ?
-                userRepository.findById(id).get() :
-                null;
+        return userRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -58,9 +56,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     @Transactional
     public void update(User user, Long id) {
-        User existingUser = getById(id);
+        User existingUser = getById(id); // сделать проверку на null
         existingUser.setUsername(user.getUsername());
         existingUser.setEmail(user.getEmail());
+        existingUser.setPassword(user.getPassword());
     }
 
     @Override
