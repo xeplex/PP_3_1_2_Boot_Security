@@ -26,11 +26,17 @@
             <th>ID</th>
             <th>Username</th>
             <th>Email</th>
+            <th>Roles</th>
         </tr>
 
         <td><span th:text="${user.id}"></span></td>
         <td><span th:text="${user.username}"></span></td>
         <td><span th:text="${user.email}"></span></td>
+        <td>
+            <div th:each="role : ${userRoles}">
+                <span th:text="${role.name}"></span>
+            </div>
+        </td>
     </table>
 </div>
 <form th:action="@{/logout}" method="post">

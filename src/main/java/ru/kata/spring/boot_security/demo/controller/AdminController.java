@@ -41,6 +41,15 @@ public class AdminController {
         return "users";
     }
 
+    @GetMapping("admin/showInfo") // тут что-то не работает
+    public String info(@RequestParam Long id, Model model) {
+        User user = userService.getById(id);
+        model.addAttribute("user", userService.getById(id));
+        List<Role> userRoles = (List<Role>) user.getRoles();
+        model.addAttribute("userRoles", userRoles);
+        return "user";
+    }
+
     @GetMapping("/admin/addNewUser")
     public String addNewUser(Model model) {
         User user = new User();
@@ -82,12 +91,15 @@ public class AdminController {
     }
 
     @PostMapping("/admin/updateUser")
-    public String updateUser(@ModelAttribute("user") User user, @RequestParam("id") Long id) {
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
+    public String updateUser(@ModelAttribute("user") User user, @RequestParam("id") Long id,
+                             @RequestParam(required = false) String newPassword) {
+        User existingUser = userService.getById(id);
+        if (newPassword != null && newPassword.isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+        } else {
+            user.setPassword(existingUser.getPassword());
         }
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
         userService.update(user, id);
         return "redirect:/admin";
     }
