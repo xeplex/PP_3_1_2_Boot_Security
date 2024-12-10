@@ -8,10 +8,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.dao.RoleRepository;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
@@ -20,9 +17,11 @@ import ru.kata.spring.boot_security.demo.service.UserService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 
-@Controller()
+@Controller
+@RequestMapping("/admin")
 public class AdminController {
 
     private final UserService userService;
@@ -37,22 +36,24 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping("/admin")
-    public String getUsers(Model model) {
+    @GetMapping
+    public String getUsers(Model model, Principal principal) {
+        String username = principal.getName();
         model.addAttribute("users", userService.getAll());
+        model.addAttribute("username", username);
         return "users";
     }
 
-    @GetMapping("admin/showInfo")
+    @GetMapping("/showInfo")
     public String info(@RequestParam Long id, Model model) {
         User user = userService.getById(id);
         model.addAttribute("user", userService.getById(id));
         List<Role> userRoles = (List<Role>) user.getRoles();
         model.addAttribute("userRoles", userRoles);
-        return "user";
+        return "userForAdmins";
     }
 
-    @GetMapping("/admin/addNewUser")
+    @GetMapping("/addNewUser")
     public String addNewUser(Model model) {
         User user = new User();
         model.addAttribute("user", user);
@@ -61,7 +62,7 @@ public class AdminController {
         return "user-info";
     }
 
-    @GetMapping("/admin/editUser")
+    @GetMapping("/editUser")
     public String editUser(@RequestParam("id") Long id, Model model) {
         User user = userService.getById(id);
         model.addAttribute("user", user);
@@ -70,44 +71,44 @@ public class AdminController {
         return "update";
     }
 
-    @GetMapping("/admin/cancel")
+    @GetMapping("/cancel")
     public String cancel() {
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/saveUser")
+    @GetMapping("/back")
+    public String back() {
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/saveUser")
     public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             List<Role> roles = roleRepository.findAll();
             model.addAttribute("allRoles", roles);
             return "user-info";
         } else {
-            if (user.getPassword() == null || user.getPassword().isEmpty()) {
-                throw new IllegalArgumentException("Password cannot be null or empty");
-            }
-            String encodedPassword = passwordEncoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
             userService.save(user);
             return "redirect:/admin";
         }
     }
 
-    @PostMapping("/admin/deleteUser")
+    @PostMapping("/deleteUser")
     public String deleteUser(@RequestParam("id") Long id) {
         userService.delete(id);
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/updateUser")
-    public String updateUser (@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
-                              @RequestParam("id") Long id,
-                              Model model) {
+    @PostMapping("/updateUser")
+    public String updateUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
+                             @RequestParam("id") Long id,
+                             Model model) {
         if (bindingResult.hasFieldErrors("username") || bindingResult.hasFieldErrors("email")) {
             List<Role> roles = roleRepository.findAll();
             model.addAttribute("allRoles", roles);
             return "update";
         }
-        User existingUser  = userService.getById(id);
+        User existingUser = userService.getById(id);
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             user.setPassword(existingUser.getPassword());
         } else {
@@ -119,8 +120,7 @@ public class AdminController {
     }
 
 
-
-    @PostMapping("admin/logout")
+    @PostMapping("/logout")
     public String logoutPage(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
