@@ -3,20 +3,30 @@
 <head>
     <title>User Info</title>
 </head>
+<style>
+    .error {
+        color: red;
+    }
+</style>
 <body>
-<h2>Update User Info</h2>
+<h2>UPDATE USER</h2>
 <br>
 
 <form th:action="@{/admin/updateUser}" th:object="${user}" method="post">
-
     <input type="hidden" th:field="*{id}"/>
-
-    Username: <input type="text" th:field="*{username}"/>
-    <br><br>
-    Email: <input type="text" th:field="*{email}"/>
-    <br><br>
-    Password: <input type="password" th:field="*{password}"/>
-    <br><br>
+    <label>Username:</label>
+    <input type="text" th:field="*{username}"/>
+    <div class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="Leave blank to keep it as is.">
+        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+    </div>
+    </div>
+    <label>Email:</label>
+    <input type="text" th:field="*{email}"/>
+    <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+    <br>
     <label>Roles:
         <input type="checkbox" name="roles"
                th:each="role : ${allRoles}"
@@ -27,8 +37,6 @@
     <br>
     <input type="submit" value="OK">
     <input type="button" value="CANCEL" onclick="window.location.href='cancel'"/>
-
 </form>
-
 </body>
 </html>

@@ -1,11 +1,36 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Spring Security Example</title>
+    <title>Login Page</title>
+    <style>
+        body {
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/76/Tabby_cat-hello.jpg');
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        .login-button {
+            background-image: url('https://a.d-cd.net/vxqsU-Y-RLE_qWvk79LYv0Aa9oY-960.jpg');
+            background-size: cover;
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 20px 40px;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
 <body>
-<h1>Welcome to Index PAGE!</h1>
-
-
+<div>
+    <button class="login-button" onclick="window.location.href='loginPage'">LOGIN</button>
+    <div class="button-background"></div>
+</div>
 </body>
 </html>

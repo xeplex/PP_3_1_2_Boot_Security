@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.List;
 
 @Controller()
@@ -41,7 +43,7 @@ public class AdminController {
         return "users";
     }
 
-    @GetMapping("admin/showInfo") // тут что-то не работает
+    @GetMapping("admin/showInfo")
     public String info(@RequestParam Long id, Model model) {
         User user = userService.getById(id);
         model.addAttribute("user", userService.getById(id));
@@ -74,14 +76,20 @@ public class AdminController {
     }
 
     @PostMapping("/admin/saveUser")
-    public String saveUser(@ModelAttribute("user") User user) {
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
+    public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            List<Role> roles = roleRepository.findAll();
+            model.addAttribute("allRoles", roles);
+            return "user-info";
+        } else {
+            if (user.getPassword() == null || user.getPassword().isEmpty()) {
+                throw new IllegalArgumentException("Password cannot be null or empty");
+            }
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
+            userService.save(user);
+            return "redirect:/admin";
         }
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userService.save(user);
-        return "redirect:/admin";
     }
 
     @PostMapping("/admin/deleteUser")
@@ -91,18 +99,26 @@ public class AdminController {
     }
 
     @PostMapping("/admin/updateUser")
-    public String updateUser(@ModelAttribute("user") User user, @RequestParam("id") Long id,
-                             @RequestParam(required = false) String newPassword) {
-        User existingUser = userService.getById(id);
-        if (newPassword != null && newPassword.isEmpty()) {
-            String encodedPassword = passwordEncoder.encode(newPassword);
-            user.setPassword(encodedPassword);
-        } else {
+    public String updateUser (@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
+                              @RequestParam("id") Long id,
+                              Model model) {
+        if (bindingResult.hasFieldErrors("username") || bindingResult.hasFieldErrors("email")) {
+            List<Role> roles = roleRepository.findAll();
+            model.addAttribute("allRoles", roles);
+            return "update";
+        }
+        User existingUser  = userService.getById(id);
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
             user.setPassword(existingUser.getPassword());
+        } else {
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
         }
         userService.update(user, id);
         return "redirect:/admin";
     }
+
+
 
     @PostMapping("admin/logout")
     public String logoutPage(HttpServletRequest request, HttpServletResponse response) {

@@ -56,15 +56,15 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void update(User user, Long id) {
         User existingUser = getById(id);
-        if (existingUser != null) {
-            existingUser.setUsername(user.getUsername());
-            existingUser.setEmail(user.getEmail());
+        existingUser.setUsername(user.getUsername());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setRoles(user.getRoles());
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             existingUser.setPassword(user.getPassword());
-            existingUser.setRoles(user.getRoles());
-        } else {
-            throw new EntityNotFoundException("User  with id " + id + " not found.");
         }
+        userRepository.save(existingUser);
     }
+
 
     @Override
     public User findByUsername(String username) {

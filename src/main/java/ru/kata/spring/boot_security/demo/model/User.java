@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,11 +26,16 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @NotBlank(message = "Username can't be empty")
+    @Size(min = 2, max = 30, message = "Username cannot be less than 2 or more than 30 characters")
     private String username;
 
+    @NotBlank(message = "Password can't be empty")
+    @Size(min = 6, message = "Password cannot be less than 6 characters")
     private String password;
 
+    @NotBlank(message = "Email can't be empty")
+    @Email(message = "The wrong type of email")
     private String email;
 
 
