@@ -14,7 +14,6 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
 
-import javax.persistence.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,7 +64,8 @@ public class UserServiceImpl implements UserService {
         existingUser.setEmail(user.getEmail());
         existingUser.setRoles(user.getRoles());
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            existingUser.setPassword(user.getPassword());
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            existingUser.setPassword(encodedPassword);
         }
         userRepository.save(existingUser);
     }

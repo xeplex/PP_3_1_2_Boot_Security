@@ -26,13 +26,12 @@
     <input type="text" th:field="*{email}"/>
     <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
     <br>
-    <label>Roles:
-        <input type="checkbox" name="roles"
-               th:each="role : ${allRoles}"
-               th:text="${role.name}"
-               th:value="${role.id}"
-               th:field="*{roles}"/>
-    </label>
+    <label>Roles:</label>
+    <div th:each="role : ${allRoles}">
+        <input type="checkbox" th:value="${role.id}" th:field="*{roles}" />
+        <span th:text="${role.name}"></span>
+    </div>
+    <div class="error" th:if="${#fields.hasErrors('roles')}" th:errors="*{roles}"></div>
     <br>
     <input type="submit" value="OK">
     <input type="button" value="CANCEL" onclick="window.location.href='cancel'"/>

@@ -3,15 +3,14 @@ package ru.kata.spring.boot_security.demo.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.dao.RoleRepository;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,21 +24,24 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final RoleService roleService;
 
 
     @Autowired
-    public AdminController(UserService userService, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.roleService = roleService;
     }
 
     @GetMapping
     public String getUsers(Model model, Principal principal) {
         String username = principal.getName();
         model.addAttribute("users", userService.getAll());
+        List<User> users = userService.getAll();
+        for (User user : users) {
+            user.setRoles(roleService.findRolesByUserId(user.getId()));
+        }
+        model.addAttribute("users", users);
         model.addAttribute("username", username);
         return "users";
     }
@@ -57,7 +59,7 @@ public class AdminController {
     public String addNewUser(Model model) {
         User user = new User();
         model.addAttribute("user", user);
-        List<Role> roles = roleRepository.findAll();
+        List<Role> roles = roleService.getAll();
         model.addAttribute("allRoles", roles);
         return "user-info";
     }
@@ -66,7 +68,7 @@ public class AdminController {
     public String editUser(@RequestParam("id") Long id, Model model) {
         User user = userService.getById(id);
         model.addAttribute("user", user);
-        List<Role> roles = roleRepository.findAll();
+        List<Role> roles = roleService.getAll();
         model.addAttribute("allRoles", roles);
         return "update";
     }
@@ -84,13 +86,19 @@ public class AdminController {
     @PostMapping("/saveUser")
     public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
-            List<Role> roles = roleRepository.findAll();
+            List<Role> roles = roleService.getAll();
             model.addAttribute("allRoles", roles);
             return "user-info";
-        } else {
-            userService.save(user);
-            return "redirect:/admin";
         }
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            bindingResult.rejectValue("roles", "error.user",
+                    "Please select at least one role");
+            List<Role> roles = roleService.getAll();
+            model.addAttribute("allRoles", roles);
+            return "user-info";
+        }
+        userService.save(user);
+        return "redirect:/admin";
     }
 
     @PostMapping("/deleteUser")
@@ -104,16 +112,16 @@ public class AdminController {
                              @RequestParam("id") Long id,
                              Model model) {
         if (bindingResult.hasFieldErrors("username") || bindingResult.hasFieldErrors("email")) {
-            List<Role> roles = roleRepository.findAll();
+            List<Role> roles = roleService.getAll();
             model.addAttribute("allRoles", roles);
             return "update";
         }
-        User existingUser = userService.getById(id);
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            user.setPassword(existingUser.getPassword());
-        } else {
-            String encodedPassword = passwordEncoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            bindingResult.rejectValue("roles", "error.user",
+                    "Please select at least one role");
+            List<Role> roles = roleService.getAll();
+            model.addAttribute("allRoles", roles);
+            return "update";
         }
         userService.update(user, id);
         return "redirect:/admin";

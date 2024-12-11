@@ -83,11 +83,17 @@
         <tr>
             <th>Username</th>
             <th>Email</th>
+            <th>Roles</th>
             <th>Operations</th>
         </tr>
         <tr th:each="user : ${users}">
             <td th:utext="${user.username}">...</td>
             <td th:utext="${user.email}">...</td>
+            <td>
+                <div th:each="role : ${user.roles}">
+                    <span th:text="${role.name}"></span>
+                </div>
+            </td>
             <td>
                 <div style="display: inline-block; margin-right: 10px;">
                     <form th:action="@{/admin/deleteUser}" method="post">
