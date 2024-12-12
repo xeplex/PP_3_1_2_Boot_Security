@@ -85,6 +85,14 @@ public class AdminController {
 
     @PostMapping("/saveUser")
     public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult, Model model) {
+        User existingUserByUsername = userService.findByUsername(user.getUsername());
+        if (existingUserByUsername != null) {
+            bindingResult.rejectValue("username", "error.user", "Username already exists");
+        }
+        User existingUserByEmail = userService.findByEmail(user.getEmail());
+        if (existingUserByEmail != null) {
+            bindingResult.rejectValue("email", "email.error", "Email already exists");
+        }
         if (bindingResult.hasErrors()) {
             List<Role> roles = roleService.getAll();
             model.addAttribute("allRoles", roles);
@@ -111,6 +119,14 @@ public class AdminController {
     public String updateUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
                              @RequestParam("id") Long id,
                              Model model) {
+        User existingUserByUsername = userService.findByUsername(user.getUsername());
+        if (existingUserByUsername != null && !existingUserByUsername.getId().equals(id)) {
+            bindingResult.rejectValue("username", "error.user", "Username already exists");
+        }
+        User existingUserByEmail = userService.findByEmail(user.getEmail());
+        if (existingUserByEmail != null && !existingUserByEmail.getId().equals(id)) {
+            bindingResult.rejectValue("email", "email.error", "Email already exists");
+        }
         if (bindingResult.hasFieldErrors("username") || bindingResult.hasFieldErrors("email")) {
             List<Role> roles = roleService.getAll();
             model.addAttribute("allRoles", roles);
