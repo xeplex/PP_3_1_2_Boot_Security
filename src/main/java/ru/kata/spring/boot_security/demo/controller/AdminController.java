@@ -12,6 +12,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
+import ru.kata.spring.boot_security.demo.service.ValidateUserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,12 +26,14 @@ public class AdminController {
 
     private final UserService userService;
     private final RoleService roleService;
+    private final ValidateUserService validateUserService;
 
 
     @Autowired
-    public AdminController(UserService userService, RoleService roleService) {
+    public AdminController(UserService userService, RoleService roleService, ValidateUserService validateUserService) {
         this.userService = userService;
         this.roleService = roleService;
+        this.validateUserService = validateUserService;
     }
 
     @GetMapping
@@ -85,24 +88,13 @@ public class AdminController {
 
     @PostMapping("/saveUser")
     public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult, Model model) {
-        User existingUserByUsername = userService.findByUsername(user.getUsername());
-        if (existingUserByUsername != null) {
-            bindingResult.rejectValue("username", "error.user", "Username already exists");
-        }
-        User existingUserByEmail = userService.findByEmail(user.getEmail());
-        if (existingUserByEmail != null) {
-            bindingResult.rejectValue("email", "email.error", "Email already exists");
-        }
+        validateUserService.validateByUsernameAndEmail(user, bindingResult, null);
         if (bindingResult.hasErrors()) {
             List<Role> roles = roleService.getAll();
             model.addAttribute("allRoles", roles);
             return "user-info";
         }
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            bindingResult.rejectValue("roles", "error.user",
-                    "Please select at least one role");
-            List<Role> roles = roleService.getAll();
-            model.addAttribute("allRoles", roles);
+        if (validateUserService.validateByRoles(user, bindingResult, model)) {
             return "user-info";
         }
         userService.save(user);
@@ -119,30 +111,18 @@ public class AdminController {
     public String updateUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
                              @RequestParam("id") Long id,
                              Model model) {
-        User existingUserByUsername = userService.findByUsername(user.getUsername());
-        if (existingUserByUsername != null && !existingUserByUsername.getId().equals(id)) {
-            bindingResult.rejectValue("username", "error.user", "Username already exists");
-        }
-        User existingUserByEmail = userService.findByEmail(user.getEmail());
-        if (existingUserByEmail != null && !existingUserByEmail.getId().equals(id)) {
-            bindingResult.rejectValue("email", "email.error", "Email already exists");
-        }
+        validateUserService.validateByUsernameAndEmail(user, bindingResult, id);
         if (bindingResult.hasFieldErrors("username") || bindingResult.hasFieldErrors("email")) {
             List<Role> roles = roleService.getAll();
             model.addAttribute("allRoles", roles);
             return "update";
         }
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            bindingResult.rejectValue("roles", "error.user",
-                    "Please select at least one role");
-            List<Role> roles = roleService.getAll();
-            model.addAttribute("allRoles", roles);
+        if (validateUserService.validateByRoles(user, bindingResult, model)) {
             return "update";
         }
         userService.update(user, id);
         return "redirect:/admin";
     }
-
 
     @PostMapping("/logout")
     public String logoutPage(HttpServletRequest request, HttpServletResponse response) {
