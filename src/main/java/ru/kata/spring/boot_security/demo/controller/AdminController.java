@@ -101,13 +101,13 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @PostMapping("/deleteUser")
+    @DeleteMapping("/deleteUser")
     public String deleteUser(@RequestParam("id") Long id) {
         userService.delete(id);
         return "redirect:/admin";
     }
 
-    @PostMapping("/updateUser")
+    @PatchMapping("/updateUser")
     public String updateUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
                              @RequestParam("id") Long id,
                              Model model) {

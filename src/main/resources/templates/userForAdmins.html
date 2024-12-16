@@ -16,6 +16,19 @@
         text-decoration: none;
         margin-right: 5px;
     }
+
+    .back-button {
+        padding: 3px 7px;
+        background-color: #a900ff;
+        color: #000000;
+        border: black;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        margin-right: 5px;
+    }
 </style>
 <body>
 <h1>User Information. Page for extra information</h1>
@@ -42,7 +55,7 @@
 <form th:action="@{/logout}" method="post">
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <button type="submit" class="logout-button">LOGOUT</button>
-    <input type="button" value="BACK" onclick="window.location.href='back'"/>
+    <input type="button" class="back-button" value="BACK" onclick="window.location.href='back'"/>
 </form>
 </body>
 </html>
